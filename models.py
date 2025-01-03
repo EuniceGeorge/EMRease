@@ -1,8 +1,6 @@
 from datetime import datetime
 from app import db
 
-
-
 class Patient(db.Model):
     __tablename__ = 'patients'
     
