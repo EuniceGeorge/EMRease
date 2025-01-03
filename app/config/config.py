@@ -9,4 +9,5 @@ app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://MedEase_user:medease@localhost/MedEase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+#db object instantiated from the class SQLAlchemy
 db = SQLAlchemy(app)

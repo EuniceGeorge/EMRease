@@ -1,10 +1,10 @@
-from config.config import db, app
+from config.config import db
 from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
+# from flask import Flask
 
-app = Flask(__name__)
-db = SQLAlchemy(app)
+# app = Flask(__name__)
+# db = SQLAlchemy(app)
 
 class Patient(db.Model):
     __tablename__ = 'patients'
