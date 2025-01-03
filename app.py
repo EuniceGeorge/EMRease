@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# hows how to initialize and configure a simple mysql database. 'mysql://username:password@host:port/database_name
+#how to initialize and configure a simple mysql database. 'mysql://username:password@host:port/database_name
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://MedEase_user:medease@localhost/MedEase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -22,4 +22,14 @@ def user(name):
     return f'<h1> Hello, {name}</h1>.'
 
 if __name__ == "__main__":
+    with app.app_context():
+        # Drop all existing tables 
+        print("Dropping existing tables...")
+        db.drop_all()
+
+        #creating tables
+        print("Creating new tables...")
+        db.create_all()
+
+        print("Database tables created successfully!")       
     app.run(debug=True)
