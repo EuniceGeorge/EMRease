@@ -1,6 +1,9 @@
 from flask import Flask
+from models import db, Patient, Doctor, MedicalRecord, Appointment
 
 app = Flask(__name__)
+
+db.init_app(app)
 
 # testing the apri service
 @app.route('/')
