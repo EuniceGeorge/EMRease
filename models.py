@@ -1,6 +1,5 @@
 from extension import db
 from datetime import datetime
-#from app import db
 
 
 class Patient(db.Model):
@@ -14,8 +13,8 @@ class Patient(db.Model):
     contact_number = db.Column(db.String(15))
     email = db.Column(db.String(100), unique=True)
     address = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.date)
-    updated_at = db.Column(db.DateTime, default=datetime.date, onupdate=datetime.date)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     medical_records = db.relationship('MedicalRecord', backref='patient', lazy=True)
     appointments = db.relationship('Appointment', backref='patient', lazy=True)
@@ -31,8 +30,8 @@ class Doctor(db.Model):
     specialization = db.Column(db.String(100), nullable=False)
     contact_number = db.Column(db.String(15))
     email = db.Column(db.String(100), unique=True)
-    created_at = db.Column(db.DateTime, default=datetime.date)
-    updated_at = db.Column(db.DateTime, default=datetime.date, onupdate=datetime.date)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     appointments = db.relationship('Appointment', backref='doctor', lazy=True)
     medical_records = db.relationship('MedicalRecord', backref='doctor', lazy=True)
@@ -47,9 +46,9 @@ class MedicalRecord(db.Model):
     diagnosis = db.Column(db.Text, nullable=False)
     treatment = db.Column(db.Text, nullable=False)
     prescription = db.Column(db.Text)
-    visit_date = db.Column(db.DateTime, nullable=False, default=datetime.date)
-    created_at = db.Column(db.DateTime, default=datetime.date)
-    updated_at = db.Column(db.DateTime, default=datetime.date, onupdate=datetime.date)
+    visit_date = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Appointment(db.Model):
     __tablename__ = 'appointments'
@@ -60,8 +59,8 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(20), default='scheduled')  # scheduled, completed, cancelled
     reason = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.date)
-    updated_at = db.Column(db.DateTime, default=datetime.date, onupdate=datetime.date)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -72,7 +71,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # admin, doctor, staff
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.date)
+    created_at = db.Column(db.DateTime, default=datetime.now)
 
 
 
