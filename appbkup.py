@@ -1,7 +1,5 @@
 from flask import Flask
-from extension import db
-#from flask_sqlalchemy import SQLAlchemy
-from models import Patient, Doctor, MedicalRecord, Appointment, User
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
@@ -10,7 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://MedEase_user:medease@localhost/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 #db object instantiated from the class SQLAlchemy
-db.init_app(app)
+db = SQLAlchemy(app)
 
 
 # testing the apri service
@@ -25,12 +23,12 @@ def user(name):
 
 if __name__ == "__main__":
     with app.app_context():
+        # Drop all existing tables 
         print("Dropping existing tables...")
         db.drop_all()
-        
-        #Create_all tables
-        print("Creating new tables...")
-        db.create_all()
-        
-        print("Database tables created successfully!")
-        app.run(debug=True)
+
+        # #creating tables
+        # print("Creating new tables...")
+        # db.create_all()
+
+    app.run(debug=True)
