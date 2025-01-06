@@ -1,6 +1,5 @@
 from flask import Flask
 from extension import db
-#from flask_sqlalchemy import SQLAlchemy
 from models import Patient, Doctor, MedicalRecord, Appointment, User
 
 app = Flask(__name__)
@@ -9,7 +8,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://MedEase_user:medease@localhost/MedEase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-#db object instantiated from the class SQLAlchemy
+#Initialize the db with the Flask app, it must be called before accessing the database
 db.init_app(app)
 
 

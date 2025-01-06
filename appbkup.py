@@ -11,7 +11,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-# testing the apri service
+# testing the api service
 @app.route('/')
 def index():
     return "Hello world !!!!"
