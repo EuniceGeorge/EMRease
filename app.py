@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from extension import db
 from models import Patient, Doctor, MedicalRecord, Appointment, User
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -27,11 +28,11 @@ def user(name):
 
 #patients routes
 @app.route('/api/patients', methods=['GET'])
-def get_patient():
+def get_all_patient():
     patients = Patient.query.all()
     return jsonify([{
         'id': p.id,
-        'first_name': p.first_name,
+        'first_name': p.first_name, 
         'last_name': p.last_name,
         'date_of_birth': p.date_of_birth.strftime('%Y-%m-%d'),
         'gender': p.gender,
@@ -39,6 +40,36 @@ def get_patient():
         'email': p.email,
         'address': p.address
     } for p in patients])
+
+@app.route('/api/patients/<int:id>', methods=['GET'])
+def get_patient_id(id):
+        patient = Patient.query.get_or_404(id)
+        return jsonify({
+            'id': patient.id,
+            'first_name': patient.first_name,
+            'last_name': patient.last_name,
+            'date_of_birth': patient.date_of_birth.strftime('%Y-%m-%d'),
+            'gender': patient.gender,
+            'contact_number': patient.contact_number,
+            'email': patient.email,
+            'address': patient.address
+        })
+
+@app.route('/api/patients', methods=['POST'])
+def create_patient():
+        data = request.get_json()
+        new_patient = Patient(
+            first_name=data['first_name'],
+            last_name=data['last_name'], 
+            date_of_birth=datetime.strptime(data['date_of_birth'], '%Y-%m-%d'),
+            gender=data['gender'],
+            contact_number=data.get('contact_number'),
+            email=data.get('email'),
+            address=data.get('address')
+        )
+        db.session.add(new_patient)
+        db.session.commit()
+        return jsonify({'message': 'Patient created successfully', 'id': new_patient.id}), 201
 
 # doctors routes
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
