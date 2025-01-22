@@ -100,7 +100,7 @@ def get_doctor_id(id):
             'email': doctor.email
         })
 
-# create doctor 
+# create new doctor
 @app.route('/api/doctors', methods=['POST'])
 def create_doctor():
     data = request.get_json()
@@ -130,6 +130,21 @@ def get_appointments():
             'reason': a.reason
         } for a in appointments])
 
+#create a new appointments
+@app.route('/api/appointments', methods=['POST'])
+def create_appointment():
+        data = request.get_json()
+        new_appointment = Appointment(
+            patient_id=data['patient_id'],
+            doctor_id=data['doctor_id'],
+            appointment_date=datetime.strptime(data['appointment_date'], '%Y-%m-%d %H:%M:%S'),
+            status=data.get('status', 'scheduled'),
+            reason=data.get('reason')
+        )
+        db.session.add(new_appointment)
+        db.session.commit()
+        return jsonify({'message': 'Appointment created successfully', 'id': new_appointment.id}), 201
+
 # Medical Record Routes
 # Retrieves all medical records for a specific patient
 @app.route('/api/medical-records/patient/<int:patient_id>', methods=['GET'])
@@ -144,6 +159,22 @@ def get_patient_records(patient_id):
             'prescription': r.prescription,
             'visit_date': r.visit_date.strftime('%Y-%m-%d %H:%M:%S')
         } for r in records])
+
+# create a new medical record
+@app.route('/api/medical-records', methods=['POST'])
+def create_medical_record():
+        data = request.get_json()
+        new_record = MedicalRecord(
+            patient_id=data['patient_id'],
+            doctor_id=data['doctor_id'],
+            diagnosis=data['diagnosis'],
+            treatment=data['treatment'],
+            prescription=data.get('prescription'),
+            visit_date=datetime.now()
+        )
+        db.session.add(new_record)
+        db.session.commit()
+        return jsonify({'message': 'Medical record created successfully', 'id': new_record.id}), 201
 
 if __name__ == "__main__":
     with app.app_context():
