@@ -13,15 +13,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
-# testing the apri service
-@app.route('/')
-def index():
-    return "Hello world !!!!"
+# # testing the apri service
+# @app.route('/')
+# def index():
+#     return "Hello world !!!!"
 
-@app.route('/user/<name>')
-def user(name):
-    # return '<h1>Hello, {}!</h1>'.format(name)
-    return f'<h1> Hello, {name}</h1>.'
+# @app.route('/user/<name>')
+# def user(name):
+#     # return '<h1>Hello, {}!</h1>'.format(name)
+#     return f'<h1> Hello, {name}</h1>.'
 
 # Create resources for the EMR API
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -119,12 +119,12 @@ def get_patient_records(patient_id):
 
 if __name__ == "__main__":
     with app.app_context():
-        print("Dropping existing tables...")
-        db.drop_all()
+        # print("Dropping existing tables...")
+        # db.drop_all()
         
-        #Create_all tables
-        print("Creating new tables...")
-        db.create_all()
+        # #Create_all tables
+        # print("Creating new tables...")
+        #db.create_all()
         
         print("Database tables created successfully!")
         app.run(debug=True)
