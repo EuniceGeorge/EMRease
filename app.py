@@ -14,7 +14,7 @@ db.init_app(app)
 
 
 # # testing the apri service
-# @app.route('/')
+# @app.route('/') 
 # def index():
 #     return "Hello world !!!!"
 
@@ -76,7 +76,7 @@ def create_patient():
 
 #retrieve all doctors
 @app.route('/api/doctors', methods=['GET'])
-def get_doctors():
+def get_all_doctors():
         doctors = Doctor.query.all()
         return jsonify([{
             'id': d.id,
@@ -86,6 +86,34 @@ def get_doctors():
             'contact_number': d.contact_number,
             'email': d.email
         } for d in doctors])
+
+#get doctor by id
+@app.route('/api/doctors/<int:id>', methods=['GET'])
+def get_doctor_id(id):
+        doctor = Doctor.query.get_or_404(id)
+        return jsonify({
+            'id': doctor.id,
+            'first_name': doctor.first_name,
+            'last_name': doctor.last_name,
+            'specialization': doctor.specialization,
+            'contact_number': doctor.contact_number,
+            'email': doctor.email
+        })
+
+# create doctor 
+@app.route('/api/doctors', methods=['POST'])
+def create_doctor():
+    data = request.get_json()
+    new_doctor = Doctor(
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        specialization=data['specialization'],
+        contact_number=data.get('contact_number'),
+        email=data.get('email')
+    )
+    db.session.add(new_doctor)
+    db.session.commit()
+    return jsonify({'message': 'doctor created successfully', 'id': new_doctor.id}), 201
 
 # Appointment Routes
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
