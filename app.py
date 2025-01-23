@@ -1,13 +1,17 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session, redirect, url_for, flash
 from extension import db
 from models import Patient, Doctor, MedicalRecord, Appointment, User
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
 
 #how to initialize and configure a simple mysql database. 'mysql://username:password@host:port/database_name
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://MedEase_user:medease@localhost/MedEase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config['SECRET_KEY'] = 'password'
 
 #Initialize the db with the Flask app, it must be called before accessing the database
 db.init_app(app)
@@ -26,8 +30,34 @@ db.init_app(app)
 # Create resources for the EMR API
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# Authentication decorators
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return jsonify({'error': 'Login required'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+def role_required(roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_id' not in session:
+                return jsonify({'error': 'Login required'}), 401
+            user = User.query.get(session['user_id'])
+            if user.role not in roles:
+                return jsonify({'error': 'Unauthorized access'}), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 #patients routes
 @app.route('/api/patients', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin', 'doctor'])  # Only these roles can access
 def get_all_patient():
     patients = Patient.query.all()
     return jsonify([{
@@ -42,6 +72,8 @@ def get_all_patient():
     } for p in patients])
 
 @app.route('/api/patients/<int:id>', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin', 'doctor'])  # Only these roles can access
 def get_patient_id(id):
         patient = Patient.query.get_or_404(id)
         return jsonify({
@@ -56,6 +88,8 @@ def get_patient_id(id):
         })
 
 @app.route('/api/patients', methods=['POST'])
+@login_required  # Only logged-in users can access
+@role_required(['admin'])  # Only these roles can access
 def create_patient():
         data = request.get_json()
         new_patient = Patient(
@@ -76,6 +110,8 @@ def create_patient():
 
 #retrieve all doctors
 @app.route('/api/doctors', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin'])  # Only these roles can access
 def get_all_doctors():
         doctors = Doctor.query.all()
         return jsonify([{
@@ -87,8 +123,10 @@ def get_all_doctors():
             'email': d.email
         } for d in doctors])
 
-#get doctor by id
+#Retrieve doctor by id
 @app.route('/api/doctors/<int:id>', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin'])  # Only these roles can access
 def get_doctor_id(id):
         doctor = Doctor.query.get_or_404(id)
         return jsonify({
@@ -102,6 +140,8 @@ def get_doctor_id(id):
 
 # create new doctor
 @app.route('/api/doctors', methods=['POST'])
+@login_required  # Only logged-in users can access
+@role_required(['admin'])  # Only these roles can access
 def create_doctor():
     data = request.get_json()
     new_doctor = Doctor(
@@ -119,6 +159,8 @@ def create_doctor():
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # retrieves all appointments
 @app.route('/api/appointments', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin', 'doctor'])  # Only these roles can access
 def get_appointments():
         appointments = Appointment.query.all()
         return jsonify([{
@@ -132,6 +174,8 @@ def get_appointments():
 
 #create a new appointments
 @app.route('/api/appointments', methods=['POST'])
+@login_required  # Only logged-in users can access
+@role_required(['admin', 'doctor'])  # Only these roles can access
 def create_appointment():
         data = request.get_json()
         new_appointment = Appointment(
@@ -148,6 +192,8 @@ def create_appointment():
 # Medical Record Routes
 # Retrieves all medical records for a specific patient
 @app.route('/api/medical-records/patient/<int:patient_id>', methods=['GET'])
+@login_required  # Only logged-in users can access
+@role_required(['admin', 'doctor'])  # Only these roles can access
 def get_patient_records(patient_id):
         records = MedicalRecord.query.filter_by(patient_id=patient_id).all()
         return jsonify([{
@@ -162,6 +208,8 @@ def get_patient_records(patient_id):
 
 # create a new medical record
 @app.route('/api/medical-records', methods=['POST'])
+@login_required  # Only logged-in users can access
+@role_required(['doctor'])  # Only these roles can access
 def create_medical_record():
         data = request.get_json()
         new_record = MedicalRecord(
@@ -175,6 +223,64 @@ def create_medical_record():
         db.session.add(new_record)
         db.session.commit()
         return jsonify({'message': 'Medical record created successfully', 'id': new_record.id}), 201
+
+# Authentication routes for the roles(doctor, admin, staff)
+@app.route('/auth/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    
+    # Check if user exists
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already registered'}), 400
+        
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'error': 'Username already taken'}), 400
+
+    new_user = User(
+        username=data['username'],
+        email=data['email'],
+        password_hash=generate_password_hash(data['password']),
+        role=data.get('role', 'staff'), # the default role is staff, if the role is not provided
+        is_active=True
+    )
+    
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'Registration successful'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    
+@app.route('/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    
+    if not user or not check_password_hash(user.password_hash, data['password']):
+        return jsonify({'error': 'Invalid credentials'}), 401
+        
+    if not user.is_active:
+        return jsonify({'error': 'Account is deactivated'}), 403
+    
+    session['user_id'] = user.id
+    return jsonify({
+        'message': 'Login successful',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'role': user.role
+        }
+    })
+
+@app.route('/auth/logout')
+@login_required
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logged out successfully'})
+
+
 
 if __name__ == "__main__":
     with app.app_context():
