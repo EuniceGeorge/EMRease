@@ -1,6 +1,6 @@
 **Overview:**
 
-The **MedEase API** is a robust and secure platform designed to facilitate the seamless management of healthcare data. It provides endpoints for managing key healthcare-related resources, including patients, doctors, appointments, medical records, and user authentication. The API is built with role-based access control to ensure that only authorized users can access or modify sensitive information, making it ideal for hospitals, clinics, and other healthcare providers.
+The **EMRease API** is a robust and secure platform designed to facilitate the seamless management of healthcare data. It provides endpoints for managing key healthcare-related resources, including patients, doctors, appointments, medical records, and user authentication. The API is built with role-based access control to ensure that only authorized users can access or modify sensitive information, making it ideal for hospitals, clinics, and other healthcare providers.
 
 ---
 
